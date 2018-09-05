@@ -8,6 +8,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"net"
 	"os"
@@ -330,11 +331,19 @@ func updatePasswd() {
 }
 
 func waitSignal() {
+	var dumpfile = os.Getenv("TRAFFIC_DUMP_FILE")
 	var sigChan = make(chan os.Signal, 1)
-	signal.Notify(sigChan, syscall.SIGHUP)
+	signal.Notify(sigChan, syscall.SIGHUP, syscall.SIGUSR1)
 	for sig := range sigChan {
-		if sig == syscall.SIGHUP {
+		if sig == syscall.SIGHUP { // reload
 			updatePasswd()
+		} else if sig == syscall.SIGUSR1 { // dump traffic statistic
+			if dumpfile != "" {
+				log.Println("dump traffic statistic to file", dumpfile)
+				stats := passwdManager.getTrafficStats()
+				data, _ := json.Marshal(stats)
+				ioutil.WriteFile(dumpfile, data, os.FileMode(0644))
+			}
 		} else {
 			// is this going to happen?
 			log.Printf("caught signal %v, exit", sig)

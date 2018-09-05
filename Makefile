@@ -1,27 +1,18 @@
-# Use shadowsocks as command prefix to avoid name conflict
-# Maybe ss-local/server is better because easier to type
-PREFIX := shadowsocks
-LOCAL := $(GOPATH)/bin/$(PREFIX)-local
-SERVER := $(GOPATH)/bin/$(PREFIX)-server
-CGO := CGO_ENABLED=1
+default: binary
 
-all: $(LOCAL) $(SERVER) $(TEST)
-
-.PHONY: clean
+prepare:
+	mkdir -p bin/
 
 clean:
-	rm -f $(LOCAL) $(SERVER) $(TEST)
+	rm -f bin/ss-local bin/ss-server
 
-# -a option is needed to ensure we disabled CGO
-$(LOCAL): shadowsocks/*.go cmd/$(PREFIX)-local/*.go
-	cd cmd/$(PREFIX)-local; $(CGO) go install
+binary: clean server local
 
-$(SERVER): shadowsocks/*.go cmd/$(PREFIX)-server/*.go
-	cd cmd/$(PREFIX)-server; $(CGO) go install
+server:
+	go build -o bin/ss-server cmd/shadowsocks-server/*.go
 
-local: $(LOCAL)
-
-server: $(SERVER)
+local:
+	go build -o bin/ss-local cmd/shadowsocks-local/*.go
 
 test:
 	cd shadowsocks; go test
