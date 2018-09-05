@@ -17,7 +17,7 @@ import (
 	"strings"
 	"time"
 
-	ss "github.com/shadowsocks/shadowsocks-go/shadowsocks"
+	ss "github.com/bbklab/shadowsocks-go/shadowsocks"
 )
 
 var debug ss.DebugLog
@@ -431,7 +431,7 @@ func main() {
 	}
 
 	if printVer {
-		ss.PrintVersion()
+		ss.GetVersion().WriteTo(os.Stdout)
 		os.Exit(0)
 	}
 

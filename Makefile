@@ -1,27 +1,30 @@
-# Use shadowsocks as command prefix to avoid name conflict
-# Maybe ss-local/server is better because easier to type
-PREFIX := shadowsocks
-LOCAL := $(GOPATH)/bin/$(PREFIX)-local
-SERVER := $(GOPATH)/bin/$(PREFIX)-server
-CGO := CGO_ENABLED=1
 
-all: $(LOCAL) $(SERVER) $(TEST)
+VERSION := "10.2.2" # ---> upstream 1.2.2
+BUILD_TIME=$(shell date -u +%Y-%m-%d_%H:%M:%S_%Z)
+PKG := "github.com/bbklab/shadowsocks-go"
+gitCommit=$(shell git rev-parse --short HEAD)
+gitDirty=$(shell git status --porcelain --untracked-files=no)
+GIT_COMMIT=$(gitCommit)
+ifneq ($(gitDirty),)  # ---> gitDirty != ""
+GIT_COMMIT=$(gitCommit)-dirty
+endif
+BUILD_FLAGS=-X $(PKG)/shadowsocks.version=$(VERSION) -X $(PKG)/shadowsocks.gitCommit=$(GIT_COMMIT) -X $(PKG)/shadowsocks.buildAt=$(BUILD_TIME) -w -s
 
-.PHONY: clean
+default: binary
+
+prepare:
+	mkdir -p bin/
 
 clean:
-	rm -f $(LOCAL) $(SERVER) $(TEST)
+	rm -f bin/ss-local bin/ss-server
 
-# -a option is needed to ensure we disabled CGO
-$(LOCAL): shadowsocks/*.go cmd/$(PREFIX)-local/*.go
-	cd cmd/$(PREFIX)-local; $(CGO) go install
+binary: clean server local
 
-$(SERVER): shadowsocks/*.go cmd/$(PREFIX)-server/*.go
-	cd cmd/$(PREFIX)-server; $(CGO) go install
+server:
+	env CGO_ENABLED=0 GOOS=linux go build -a -ldflags "${BUILD_FLAGS}" -o bin/ss-server cmd/shadowsocks-server/*.go
 
-local: $(LOCAL)
-
-server: $(SERVER)
+local:
+	env CGO_ENABLED=0 GOOS=linux go build -a -ldflags "${BUILD_FLAGS}" -o bin/ss-local cmd/shadowsocks-local/*.go
 
 test:
 	cd shadowsocks; go test

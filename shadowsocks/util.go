@@ -4,14 +4,8 @@ import (
 	"crypto/hmac"
 	"crypto/sha1"
 	"errors"
-	"fmt"
 	"os"
 )
-
-func PrintVersion() {
-	const version = "1.2.2"
-	fmt.Println("shadowsocks-go version", version)
-}
 
 func IsFileExists(path string) (bool, error) {
 	stat, err := os.Stat(path)
