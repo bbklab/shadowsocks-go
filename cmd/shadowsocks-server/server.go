@@ -20,7 +20,7 @@ import (
 	"syscall"
 	"time"
 
-	ss "github.com/shadowsocks/shadowsocks-go/shadowsocks"
+	ss "github.com/bbklab/shadowsocks-go/shadowsocks"
 )
 
 const (
@@ -456,7 +456,7 @@ func main() {
 	flag.Parse()
 
 	if printVer {
-		ss.PrintVersion()
+		ss.GetVersion().WriteTo(os.Stdout)
 		os.Exit(0)
 	}
 
