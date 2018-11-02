@@ -39,6 +39,11 @@ const (
 	// lenHmacSha1 = 10
 )
 
+const (
+	blockedPassword        = "PORT_USE_THIS_PASSWORD_WILL_BE_BLOCKED"
+	blockedPasswordMessage = "fuck off!\r\n"
+)
+
 var debug ss.DebugLog
 var sanitizeIps bool
 var udp bool
@@ -193,8 +198,8 @@ type UDPListener struct {
 
 type PasswdManager struct {
 	sync.Mutex
-	portListener map[string]*PortListener
-	udpListener  map[string]*UDPListener
+	portListener map[string]*PortListener // port -> tcp listener
+	udpListener  map[string]*UDPListener  // port -> udp listener
 	trafficStats map[string]int64
 }
 
@@ -361,6 +366,13 @@ func run(port, password string) {
 	passwdManager.add(port, password, ln)
 	var cipher *ss.Cipher
 	log.Printf("server listening port %v ...\n", port)
+
+	// if blocked password, identify this port listening but not serving ...
+	var blocked = password == blockedPassword
+	if blocked {
+		log.Printf("server listening port %v, but won't serving any connections\n", port)
+	}
+
 	for {
 		conn, err := ln.Accept()
 		if err != nil {
@@ -368,6 +380,14 @@ func run(port, password string) {
 			debug.Printf("accept error: %v\n", err)
 			return
 		}
+
+		// block client conn
+		if blocked {
+			conn.Write([]byte(blockedPasswordMessage))
+			conn.Close()
+			continue
+		}
+
 		// Creating cipher upon first connection.
 		if cipher == nil {
 			log.Println("creating cipher for port:", port)
@@ -378,6 +398,7 @@ func run(port, password string) {
 				continue
 			}
 		}
+
 		go handleConnection(ss.NewConn(conn, cipher.Copy()), port)
 	}
 }
