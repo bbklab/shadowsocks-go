@@ -1,0 +1,8 @@
+{
+    "port_password": {
+        "8388": "barfoo!",
+        "8389": "PORT_USE_THIS_PASSWORD_WILL_BE_BLOCKED"
+    },
+    "method": "aes-128-cfb",
+    "timeout": 600
+}
