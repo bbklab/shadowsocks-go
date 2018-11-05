@@ -461,9 +461,11 @@ func main() {
 
 	var cmdConfig ss.Config
 	var printVer bool
+	var simpleVer bool
 	var core int
 
 	flag.BoolVar(&printVer, "version", false, "print version")
+	flag.BoolVar(&simpleVer, "v", false, "print simple version")
 	flag.StringVar(&configFile, "c", "config.json", "specify config file")
 	flag.StringVar(&cmdConfig.Password, "k", "", "password")
 	flag.IntVar(&cmdConfig.ServerPort, "p", 0, "server port")
@@ -478,6 +480,12 @@ func main() {
 
 	if printVer {
 		ss.GetVersion().WriteTo(os.Stdout)
+		os.Exit(0)
+	}
+
+	if simpleVer {
+		ver := ss.GetVersion()
+		os.Stdout.Write([]byte(ver.Version + " - " + ver.GitCommit + "\r\n"))
 		os.Exit(0)
 	}
 
