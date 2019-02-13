@@ -40,8 +40,9 @@ const (
 )
 
 const (
-	blockedPassword        = "PORT_USE_THIS_PASSWORD_WILL_BE_BLOCKED"
-	blockedPasswordMessage = "fuck off!\r\n"
+	ignoredPassword       = "PORT_USE_THIS_PASSWORD_WILL_BE_IGNORED" // banned
+	blockedPassword       = "PORT_USE_THIS_PASSWORD_WILL_BE_BLOCKED" // banned
+	bannedPasswordMessage = "banned!\r\n"
 )
 
 var debug ss.DebugLog
@@ -368,8 +369,8 @@ func run(port, password string) {
 	log.Printf("server listening port %v ...\n", port)
 
 	// if blocked password, identify this port listening but not serving ...
-	var blocked = password == blockedPassword
-	if blocked {
+	var banned = (password == blockedPassword || password == ignoredPassword)
+	if banned {
 		log.Printf("server listening port %v, but won't serving any connections\n", port)
 	}
 
@@ -381,9 +382,9 @@ func run(port, password string) {
 			return
 		}
 
-		// block client conn
-		if blocked {
-			conn.Write([]byte(blockedPasswordMessage))
+		// ban client conn
+		if banned {
+			conn.Write([]byte(bannedPasswordMessage))
 			conn.Close()
 			continue
 		}
