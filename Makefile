@@ -16,7 +16,7 @@ prepare:
 	mkdir -p bin/
 
 clean:
-	rm -f bin/ss-local bin/ss-server
+	rm -f bin/ss-local bin/ss-local.darwin bin/ss-server
 
 binary: clean server local
 
@@ -24,7 +24,8 @@ server:
 	env CGO_ENABLED=0 GOOS=linux go build -a -ldflags "${BUILD_FLAGS}" -o bin/ss-server cmd/shadowsocks-server/*.go
 
 local:
-	env CGO_ENABLED=0 GOOS=linux go build -a -ldflags "${BUILD_FLAGS}" -o bin/ss-local cmd/shadowsocks-local/*.go
+	env CGO_ENABLED=0 GOOS=linux  go build -a -ldflags "${BUILD_FLAGS}" -o bin/ss-local cmd/shadowsocks-local/*.go
+	env CGO_ENABLED=0 GOOS=darwin go build -a -ldflags "${BUILD_FLAGS}" -o bin/ss-local.darwin cmd/shadowsocks-local/*.go
 
 test:
 	cd shadowsocks; go test
